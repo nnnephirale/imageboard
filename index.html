@@ -1343,6 +1343,8 @@
           request.onsuccess = () => {
             if (request.result) {
               Object.assign(state, request.result);
+              // Ensure new properties have defaults if not in saved state
+              if (!state.cellBgColor) state.cellBgColor = '#e8e8e8';
               showLoadIndicator();
               resolve(true);
             } else {
