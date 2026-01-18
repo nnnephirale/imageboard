@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grid Visualizer V3.1</title>
-  <!-- V3.1: Color controls + Values modal -->
+  <title>Grid Visualizer V2.0</title>
   <style>
     :root {
       --bg-color: #f5f5f5;
@@ -326,20 +325,25 @@
     }
 
     .color-hex-input {
-      font-size: 12px;
-      font-family: 'SF Mono', Monaco, monospace;
-      color: var(--text-primary);
-      background: var(--bg-color);
+      width: 80px;
+      padding: 4px 8px;
       border: 1px solid var(--border-color);
       border-radius: 4px;
-      padding: 4px 8px;
-      width: 80px;
-      text-transform: uppercase;
+      font-size: 12px;
+      font-family: 'SF Mono', Monaco, monospace;
+      text-align: center;
+      background: var(--bg-color);
+      color: var(--text-primary);
+      transition: border-color 0.2s;
     }
 
     .color-hex-input:focus {
       outline: none;
       border-color: var(--accent);
+    }
+
+    .color-hex-input:invalid {
+      border-color: #dc2626;
     }
 
     /* Cell Count Control */
@@ -722,100 +726,6 @@
     .cell.drag-target {
       background: rgba(0, 102, 255, 0.1);
     }
-
-    /* Values Modal */
-    .values-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .values-modal.active {
-      display: flex;
-    }
-
-    .values-modal-content {
-      background: var(--panel-bg);
-      border-radius: 12px;
-      padding: 24px;
-      min-width: 300px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-
-    .values-modal-header {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-
-    .values-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .value-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      background: var(--bg-color);
-      border-radius: 6px;
-    }
-
-    .value-label {
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .value-data {
-      font-size: 14px;
-      font-family: 'SF Mono', Monaco, monospace;
-      font-weight: 500;
-      user-select: all;
-    }
-
-    .values-modal-footer {
-      margin-top: 20px;
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-
-    .modal-btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .modal-btn-primary {
-      background: var(--accent);
-      color: white;
-    }
-
-    .modal-btn-primary:hover {
-      background: #0052cc;
-    }
-
-    .modal-btn-secondary {
-      background: var(--bg-color);
-      color: var(--text-primary);
-    }
-
-    .modal-btn-secondary:hover {
-      background: var(--border-color);
-    }
   </style>
 </head>
 <body>
@@ -934,7 +844,7 @@
             </div>
             <div class="color-picker-wrapper">
               <input type="color" id="bgColor" value="#f5f5f5">
-              <input type="text" class="color-hex-input" id="bgColorHex" value="#f5f5f5" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
+              <input type="text" class="color-hex-input" id="bgColorValue" value="#f5f5f5" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
             </div>
           </div>
 
@@ -942,7 +852,7 @@
             <div class="control-header">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <label class="control-label">Cell Background</label>
-                <button class="reset-btn" id="resetCellBg" title="Reset to default">
+                <button class="reset-btn" id="resetCellBgColor" title="Reset to default">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
                     <path d="M3 3v5h5"/>
@@ -952,7 +862,7 @@
             </div>
             <div class="color-picker-wrapper">
               <input type="color" id="cellBgColor" value="#e8e8e8">
-              <input type="text" class="color-hex-input" id="cellBgColorHex" value="#e8e8e8" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
+              <input type="text" class="color-hex-input" id="cellBgColorValue" value="#e8e8e8" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
             </div>
           </div>
 
@@ -1075,31 +985,6 @@
         </div>
       </div>
     </main>
-
-    <!-- Values Modal -->
-    <div class="values-modal" id="valuesModal">
-      <div class="values-modal-content">
-        <div class="values-modal-header">Image Values</div>
-        <div class="values-list">
-          <div class="value-row">
-            <span class="value-label">Scale</span>
-            <span class="value-data" id="modalScale">100</span>
-          </div>
-          <div class="value-row">
-            <span class="value-label">X Position</span>
-            <span class="value-data" id="modalX">0</span>
-          </div>
-          <div class="value-row">
-            <span class="value-label">Y Position</span>
-            <span class="value-data" id="modalY">0</span>
-          </div>
-        </div>
-        <div class="values-modal-footer">
-          <button class="modal-btn modal-btn-secondary" id="modalClose">Close</button>
-          <button class="modal-btn modal-btn-primary" id="modalCopy">Copy All</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script>
@@ -1161,6 +1046,7 @@
         cellHeight: state.cellHeight,
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
+        cellBgColor: state.cellBgColor,
         globalScale: state.globalScale,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
@@ -1189,6 +1075,7 @@
         cellHeight: state.cellHeight,
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
+        cellBgColor: state.cellBgColor,
         globalScale: state.globalScale,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
@@ -1221,6 +1108,7 @@
         cellHeight: state.cellHeight,
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
+        cellBgColor: state.cellBgColor,
         globalScale: state.globalScale,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
@@ -1276,6 +1164,7 @@
         cellHeight: state.cellHeight,
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
+        cellBgColor: state.cellBgColor,
         globalScale: state.globalScale,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
@@ -1318,8 +1207,6 @@
           request.onsuccess = () => {
             if (request.result) {
               Object.assign(state, request.result);
-              // Ensure new properties have defaults
-              if (!state.cellBgColor) state.cellBgColor = '#e8e8e8';
               showLoadIndicator();
               resolve(true);
             } else {
@@ -1388,6 +1275,7 @@
       state.cellHeight = defaultState.cellHeight;
       state.gridWidth = defaultState.gridWidth;
       state.bgColor = defaultState.bgColor;
+      state.cellBgColor = defaultState.cellBgColor;
       state.globalScale = defaultState.globalScale;
       state.tiltIntensity = defaultState.tiltIntensity;
       state.shadowIntensity = defaultState.shadowIntensity;
@@ -1425,10 +1313,10 @@
       gridWidthValue.textContent = state.gridWidth + 'px';
       
       bgColorPicker.value = state.bgColor;
-      bgColorHex.value = state.bgColor.toUpperCase();
+      bgColorValue.value = state.bgColor;
 
       cellBgColorPicker.value = state.cellBgColor || '#e8e8e8';
-      cellBgColorHex.value = (state.cellBgColor || '#e8e8e8').toUpperCase();
+      cellBgColorValue.value = state.cellBgColor || '#e8e8e8';
 
       globalScaleSlider.value = state.globalScale;
       scaleValue.textContent = state.globalScale + '%';
@@ -1468,9 +1356,7 @@
     const cellHeightSlider = document.getElementById('cellHeight');
     const gridWidthSlider = document.getElementById('gridWidth');
     const bgColorPicker = document.getElementById('bgColor');
-    const bgColorHex = document.getElementById('bgColorHex');
     const cellBgColorPicker = document.getElementById('cellBgColor');
-    const cellBgColorHex = document.getElementById('cellBgColorHex');
     const globalScaleSlider = document.getElementById('globalScale');
     const tiltIntensitySlider = document.getElementById('tiltIntensity');
     const shadowIntensitySlider = document.getElementById('shadowIntensity');
@@ -1480,14 +1366,6 @@
     const cellCountSlider = document.getElementById('cellCount');
     const cellCountInput = document.getElementById('cellCountInput');
 
-    // Modal elements
-    const valuesModal = document.getElementById('valuesModal');
-    const modalScale = document.getElementById('modalScale');
-    const modalX = document.getElementById('modalX');
-    const modalY = document.getElementById('modalY');
-    const modalClose = document.getElementById('modalClose');
-    const modalCopy = document.getElementById('modalCopy');
-
     // Value displays
     const columnsValue = document.getElementById('columnsValue');
     const gapValue = document.getElementById('gapValue');
@@ -1495,6 +1373,7 @@
     const cellHeightValue = document.getElementById('cellHeightValue');
     const gridWidthValue = document.getElementById('gridWidthValue');
     const bgColorValue = document.getElementById('bgColorValue');
+    const cellBgColorValue = document.getElementById('cellBgColorValue');
     const scaleValue = document.getElementById('scaleValue');
     const tiltValue = document.getElementById('tiltValue');
     const shadowValue = document.getElementById('shadowValue');
@@ -1594,18 +1473,6 @@
       cell.addEventListener('click', (e) => {
         if (e.target.closest('.resize-handle') || e.target.closest('.cell-controls')) return;
         selectCell(cellData.id);
-      });
-
-      // Double-click to show values modal
-      const cellImage = cell.querySelector('.cell-image');
-      cellImage.addEventListener('dblclick', (e) => {
-        e.stopPropagation();
-        if (cellData.image || cellData.video) {
-          modalScale.textContent = cellData.scale || 100;
-          modalX.textContent = cellData.x || 0;
-          modalY.textContent = cellData.y || 0;
-          valuesModal.classList.add('active');
-        }
       });
 
       // Resize handles
@@ -2281,13 +2148,15 @@
         saveState();
       });
 
+      // Background color picker
       bgColorPicker.addEventListener('input', createSliderHandler((e) => {
         state.bgColor = e.target.value;
-        bgColorHex.value = e.target.value.toUpperCase();
+        bgColorValue.value = e.target.value;
         updateGrid();
       }));
 
-      bgColorHex.addEventListener('input', (e) => {
+      // Background color hex input
+      bgColorValue.addEventListener('input', (e) => {
         const hex = e.target.value;
         if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
           saveToHistory();
@@ -2298,13 +2167,15 @@
         }
       });
 
+      // Cell background color picker
       cellBgColorPicker.addEventListener('input', createSliderHandler((e) => {
         state.cellBgColor = e.target.value;
-        cellBgColorHex.value = e.target.value.toUpperCase();
+        cellBgColorValue.value = e.target.value;
         updateGrid();
       }));
 
-      cellBgColorHex.addEventListener('input', (e) => {
+      // Cell background color hex input
+      cellBgColorValue.addEventListener('input', (e) => {
         const hex = e.target.value;
         if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
           saveToHistory();
@@ -2431,27 +2302,6 @@
       previewBtn.addEventListener('click', togglePreview);
       exitPreview.addEventListener('click', togglePreview);
 
-      // Modal handlers
-      modalClose.addEventListener('click', () => {
-        valuesModal.classList.remove('active');
-      });
-
-      valuesModal.addEventListener('click', (e) => {
-        if (e.target === valuesModal) {
-          valuesModal.classList.remove('active');
-        }
-      });
-
-      modalCopy.addEventListener('click', () => {
-        const text = `Scale: ${modalScale.textContent}\nX: ${modalX.textContent}\nY: ${modalY.textContent}`;
-        navigator.clipboard.writeText(text).then(() => {
-          modalCopy.textContent = 'Copied!';
-          setTimeout(() => {
-            modalCopy.textContent = 'Copy All';
-          }, 1500);
-        });
-      });
-
       // Reset buttons
       document.getElementById('resetColumns')?.addEventListener('click', () => {
         saveToHistory();
@@ -2498,24 +2348,6 @@
         saveState();
       });
 
-      document.getElementById('resetBgColor')?.addEventListener('click', () => {
-        saveToHistory();
-        state.bgColor = defaultState.bgColor;
-        bgColorPicker.value = state.bgColor;
-        bgColorHex.value = state.bgColor.toUpperCase();
-        updateGrid();
-        saveState();
-      });
-
-      document.getElementById('resetCellBg')?.addEventListener('click', () => {
-        saveToHistory();
-        state.cellBgColor = defaultState.cellBgColor;
-        cellBgColorPicker.value = state.cellBgColor;
-        cellBgColorHex.value = state.cellBgColor.toUpperCase();
-        updateGrid();
-        saveState();
-      });
-
       document.getElementById('resetGlobalScale')?.addEventListener('click', () => {
         saveToHistory();
         state.globalScale = defaultState.globalScale;
@@ -2554,6 +2386,24 @@
         state.hoverScale2xAmount = defaultState.hoverScale2xAmount;
         hoverScale2xValue.textContent = state.hoverScale2xAmount + '%';
         hoverScale2xSlider.value = state.hoverScale2xAmount;
+        saveState();
+      });
+
+      document.getElementById('resetBgColor')?.addEventListener('click', () => {
+        saveToHistory();
+        state.bgColor = defaultState.bgColor;
+        bgColorValue.value = state.bgColor;
+        bgColorPicker.value = state.bgColor;
+        updateGrid();
+        saveState();
+      });
+
+      document.getElementById('resetCellBgColor')?.addEventListener('click', () => {
+        saveToHistory();
+        state.cellBgColor = defaultState.cellBgColor;
+        cellBgColorValue.value = state.cellBgColor;
+        cellBgColorPicker.value = state.cellBgColor;
+        updateGrid();
         saveState();
       });
 
