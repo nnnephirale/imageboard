@@ -324,6 +324,23 @@
       color: var(--text-secondary);
     }
 
+    .color-hex-input {
+      font-size: 12px;
+      font-family: 'SF Mono', Monaco, monospace;
+      color: var(--text-primary);
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 4px 8px;
+      width: 80px;
+      text-transform: uppercase;
+    }
+
+    .color-hex-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
     /* Cell Count Control */
     .cell-count-control {
       display: flex;
@@ -704,6 +721,100 @@
     .cell.drag-target {
       background: rgba(0, 102, 255, 0.1);
     }
+
+    /* Values Modal */
+    .values-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .values-modal.active {
+      display: flex;
+    }
+
+    .values-modal-content {
+      background: var(--panel-bg);
+      border-radius: 12px;
+      padding: 24px;
+      min-width: 300px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .values-modal-header {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .values-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .value-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--bg-color);
+      border-radius: 6px;
+    }
+
+    .value-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .value-data {
+      font-size: 14px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-weight: 500;
+      user-select: all;
+    }
+
+    .values-modal-footer {
+      margin-top: 20px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .modal-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .modal-btn-primary:hover {
+      background: #0052cc;
+    }
+
+    .modal-btn-secondary {
+      background: var(--bg-color);
+      color: var(--text-primary);
+    }
+
+    .modal-btn-secondary:hover {
+      background: var(--border-color);
+    }
   </style>
 </head>
 <body>
@@ -810,11 +921,37 @@
 
           <div class="control">
             <div class="control-header">
-              <label class="control-label">Background</label>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label class="control-label">Background</label>
+                <button class="reset-btn" id="resetBgColor" title="Reset to default">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="color-picker-wrapper">
               <input type="color" id="bgColor" value="#f5f5f5">
-              <span class="color-hex" id="bgColorValue">#f5f5f5</span>
+              <input type="text" class="color-hex-input" id="bgColorHex" value="#f5f5f5" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="control-header">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label class="control-label">Cell Background</label>
+                <button class="reset-btn" id="resetCellBg" title="Reset to default">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="color-picker-wrapper">
+              <input type="color" id="cellBgColor" value="#e8e8e8">
+              <input type="text" class="color-hex-input" id="cellBgColorHex" value="#e8e8e8" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
             </div>
           </div>
 
@@ -937,6 +1074,31 @@
         </div>
       </div>
     </main>
+
+    <!-- Values Modal -->
+    <div class="values-modal" id="valuesModal">
+      <div class="values-modal-content">
+        <div class="values-modal-header">Image Values</div>
+        <div class="values-list">
+          <div class="value-row">
+            <span class="value-label">Scale</span>
+            <span class="value-data" id="modalScale">100</span>
+          </div>
+          <div class="value-row">
+            <span class="value-label">X Position</span>
+            <span class="value-data" id="modalX">0</span>
+          </div>
+          <div class="value-row">
+            <span class="value-label">Y Position</span>
+            <span class="value-data" id="modalY">0</span>
+          </div>
+        </div>
+        <div class="values-modal-footer">
+          <button class="modal-btn modal-btn-secondary" id="modalClose">Close</button>
+          <button class="modal-btn modal-btn-primary" id="modalCopy">Copy All</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -951,6 +1113,7 @@
       paddingY: 8,
       linkPadding: true,
       bgColor: '#f5f5f5',
+      cellBgColor: '#e8e8e8',
       globalScale: 80,
       tiltIntensity: 6,
       shadowIntensity: 7,
@@ -972,6 +1135,7 @@
       cellHeight: 180,
       gridWidth: 1400,
       bgColor: '#f5f5f5',
+      cellBgColor: '#e8e8e8',
       globalScale: 80,
       tiltIntensity: 6,
       shadowIntensity: 7,
@@ -1153,6 +1317,8 @@
           request.onsuccess = () => {
             if (request.result) {
               Object.assign(state, request.result);
+              // Ensure new properties have defaults
+              if (!state.cellBgColor) state.cellBgColor = '#e8e8e8';
               showLoadIndicator();
               resolve(true);
             } else {
@@ -1258,8 +1424,11 @@
       gridWidthValue.textContent = state.gridWidth + 'px';
       
       bgColorPicker.value = state.bgColor;
-      bgColorValue.textContent = state.bgColor;
-      
+      bgColorHex.value = state.bgColor.toUpperCase();
+
+      cellBgColorPicker.value = state.cellBgColor || '#e8e8e8';
+      cellBgColorHex.value = (state.cellBgColor || '#e8e8e8').toUpperCase();
+
       globalScaleSlider.value = state.globalScale;
       scaleValue.textContent = state.globalScale + '%';
       
@@ -1298,6 +1467,9 @@
     const cellHeightSlider = document.getElementById('cellHeight');
     const gridWidthSlider = document.getElementById('gridWidth');
     const bgColorPicker = document.getElementById('bgColor');
+    const bgColorHex = document.getElementById('bgColorHex');
+    const cellBgColorPicker = document.getElementById('cellBgColor');
+    const cellBgColorHex = document.getElementById('cellBgColorHex');
     const globalScaleSlider = document.getElementById('globalScale');
     const tiltIntensitySlider = document.getElementById('tiltIntensity');
     const shadowIntensitySlider = document.getElementById('shadowIntensity');
@@ -1306,6 +1478,14 @@
     const scaleBySizeCheckbox = document.getElementById('scaleBySize');
     const cellCountSlider = document.getElementById('cellCount');
     const cellCountInput = document.getElementById('cellCountInput');
+
+    // Modal elements
+    const valuesModal = document.getElementById('valuesModal');
+    const modalScale = document.getElementById('modalScale');
+    const modalX = document.getElementById('modalX');
+    const modalY = document.getElementById('modalY');
+    const modalClose = document.getElementById('modalClose');
+    const modalCopy = document.getElementById('modalCopy');
 
     // Value displays
     const columnsValue = document.getElementById('columnsValue');
@@ -1413,6 +1593,18 @@
       cell.addEventListener('click', (e) => {
         if (e.target.closest('.resize-handle') || e.target.closest('.cell-controls')) return;
         selectCell(cellData.id);
+      });
+
+      // Double-click to show values modal
+      const cellImage = cell.querySelector('.cell-image');
+      cellImage.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        if (cellData.image || cellData.video) {
+          modalScale.textContent = cellData.scale || 100;
+          modalX.textContent = cellData.x || 0;
+          modalY.textContent = cellData.y || 0;
+          valuesModal.classList.add('active');
+        }
       });
 
       // Resize handles
@@ -1970,6 +2162,7 @@
       document.documentElement.style.setProperty('--padding-x', state.paddingX + 'px');
       document.documentElement.style.setProperty('--padding-y', state.paddingY + 'px');
       document.documentElement.style.setProperty('--bg-color', state.bgColor);
+      document.documentElement.style.setProperty('--cell-bg', state.cellBgColor);
 
       // Update all cell images with new global scale
       state.cells.forEach(cellData => {
@@ -2089,9 +2282,37 @@
 
       bgColorPicker.addEventListener('input', createSliderHandler((e) => {
         state.bgColor = e.target.value;
-        bgColorValue.textContent = e.target.value;
+        bgColorHex.value = e.target.value.toUpperCase();
         updateGrid();
       }));
+
+      bgColorHex.addEventListener('input', (e) => {
+        const hex = e.target.value;
+        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+          saveToHistory();
+          state.bgColor = hex;
+          bgColorPicker.value = hex;
+          updateGrid();
+          saveState();
+        }
+      });
+
+      cellBgColorPicker.addEventListener('input', createSliderHandler((e) => {
+        state.cellBgColor = e.target.value;
+        cellBgColorHex.value = e.target.value.toUpperCase();
+        updateGrid();
+      }));
+
+      cellBgColorHex.addEventListener('input', (e) => {
+        const hex = e.target.value;
+        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+          saveToHistory();
+          state.cellBgColor = hex;
+          cellBgColorPicker.value = hex;
+          updateGrid();
+          saveState();
+        }
+      });
 
       globalScaleSlider.addEventListener('input', createSliderHandler((e) => {
         state.globalScale = parseInt(e.target.value);
@@ -2209,6 +2430,27 @@
       previewBtn.addEventListener('click', togglePreview);
       exitPreview.addEventListener('click', togglePreview);
 
+      // Modal handlers
+      modalClose.addEventListener('click', () => {
+        valuesModal.classList.remove('active');
+      });
+
+      valuesModal.addEventListener('click', (e) => {
+        if (e.target === valuesModal) {
+          valuesModal.classList.remove('active');
+        }
+      });
+
+      modalCopy.addEventListener('click', () => {
+        const text = `Scale: ${modalScale.textContent}\nX: ${modalX.textContent}\nY: ${modalY.textContent}`;
+        navigator.clipboard.writeText(text).then(() => {
+          modalCopy.textContent = 'Copied!';
+          setTimeout(() => {
+            modalCopy.textContent = 'Copy All';
+          }, 1500);
+        });
+      });
+
       // Reset buttons
       document.getElementById('resetColumns')?.addEventListener('click', () => {
         saveToHistory();
@@ -2251,6 +2493,24 @@
         state.gridWidth = defaultState.gridWidth;
         gridWidthValue.textContent = state.gridWidth + 'px';
         gridWidthSlider.value = state.gridWidth;
+        updateGrid();
+        saveState();
+      });
+
+      document.getElementById('resetBgColor')?.addEventListener('click', () => {
+        saveToHistory();
+        state.bgColor = defaultState.bgColor;
+        bgColorPicker.value = state.bgColor;
+        bgColorHex.value = state.bgColor.toUpperCase();
+        updateGrid();
+        saveState();
+      });
+
+      document.getElementById('resetCellBg')?.addEventListener('click', () => {
+        saveToHistory();
+        state.cellBgColor = defaultState.cellBgColor;
+        cellBgColorPicker.value = state.cellBgColor;
+        cellBgColorHex.value = state.cellBgColor.toUpperCase();
         updateGrid();
         saveState();
       });
