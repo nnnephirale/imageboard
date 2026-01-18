@@ -500,7 +500,8 @@
       perspective: 1000px;
     }
 
-    .cell-image img {
+    .cell-image img,
+    .cell-image video {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
@@ -1265,15 +1266,26 @@
         const totalScale = (state.globalScale / 100) * (cellData.scale / 100);
         const translateX = cellData.x || 0;
         const translateY = cellData.y || 0;
+        const isVideo = cellData.image.startsWith('data:video/mp4');
 
-        cellsHTML += `
-    <div class="cell" data-width="${cellData.width || 1}" data-height="${cellData.height || 1}">
-      <div class="cell-image">
+        const mediaHTML = isVideo ? `
+        <video
+          src="${cellData.image}"
+          style="transform: scale(${totalScale}) translate(${translateX}%, ${translateY}%)"
+          autoplay
+          loop
+          muted
+          playsinline
+        ></video>` : `
         <img
           src="${cellData.image}"
           style="transform: scale(${totalScale}) translate(${translateX}%, ${translateY}%)"
           draggable="false"
-        >
+        >`;
+
+        cellsHTML += `
+    <div class="cell" data-width="${cellData.width || 1}" data-height="${cellData.height || 1}">
+      <div class="cell-image">${mediaHTML}
       </div>
     </div>`;
       });
@@ -1363,7 +1375,8 @@
       perspective: 1000px;
     }
 
-    .cell-image img {
+    .cell-image img,
+    .cell-image video {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
@@ -2103,9 +2116,9 @@ ${cellsHTML}
           return;
         }
 
-        // Handle image drop
+        // Handle image/video drop
         const files = e.dataTransfer.files;
-        if (files.length > 0 && files[0].type.startsWith('image/')) {
+        if (files.length > 0 && (files[0].type.startsWith('image/') || files[0].type === 'video/mp4')) {
           loadImage(files[0], cellData, cell);
         }
       });
@@ -2194,7 +2207,7 @@ ${cellsHTML}
         if (state.draggedCell) return;
 
         const files = e.dataTransfer.files;
-        if (files.length > 0 && files[0].type.startsWith('image/')) {
+        if (files.length > 0 && (files[0].type.startsWith('image/') || files[0].type === 'video/mp4')) {
           const cellData = addCell();
           const cellEl = createCell(cellData);
           grid.insertBefore(cellEl, btn);
@@ -2227,13 +2240,29 @@ ${cellsHTML}
       const translateX = cellData.x || 0;
       const translateY = cellData.y || 0;
 
-      imageContainer.innerHTML = `
-        <img
-          src="${cellData.image}"
-          style="transform: scale(${totalScale}) translate(${translateX}%, ${translateY}%)"
-          draggable="false"
-        >
-      `;
+      // Check if it's a video (MP4) or image
+      const isVideo = cellData.image.startsWith('data:video/mp4');
+
+      if (isVideo) {
+        imageContainer.innerHTML = `
+          <video
+            src="${cellData.image}"
+            style="transform: scale(${totalScale}) translate(${translateX}%, ${translateY}%)"
+            autoplay
+            loop
+            muted
+            playsinline
+          ></video>
+        `;
+      } else {
+        imageContainer.innerHTML = `
+          <img
+            src="${cellData.image}"
+            style="transform: scale(${totalScale}) translate(${translateX}%, ${translateY}%)"
+            draggable="false"
+          >
+        `;
+      }
     }
 
     // Select cell
