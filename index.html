@@ -71,7 +71,7 @@
 
     .toolbar-content {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 24px;
       padding: 16px 24px;
       min-height: 120px;
@@ -867,6 +867,22 @@
 
           <div class="control">
             <div class="control-header">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label class="control-label">2x2 Scale</label>
+                <button class="reset-btn" id="reset2x2Scale" title="Reset to default">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="control-value" id="scale2x2Value">100%</span>
+            </div>
+            <input type="range" id="scale2x2" min="50" max="150" value="100">
+          </div>
+
+          <div class="control">
+            <div class="control-header">
               <label class="control-label">Cells</label>
               <span class="control-value" id="cellCountValue">8</span>
             </div>
@@ -984,6 +1000,7 @@
       linkPadding: true,
       bgColor: '#f5f5f5',
       globalScale: 80,
+      scale2x2: 100,
       tiltIntensity: 6,
       shadowIntensity: 7,
       hoverScaleAmount: 5,
@@ -1005,6 +1022,7 @@
       gridWidth: 1400,
       bgColor: '#f5f5f5',
       globalScale: 80,
+      scale2x2: 100,
       tiltIntensity: 6,
       shadowIntensity: 7,
       hoverScaleAmount: 5,
@@ -1030,6 +1048,7 @@
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
         globalScale: state.globalScale,
+        scale2x2: state.scale2x2,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
@@ -1058,6 +1077,7 @@
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
         globalScale: state.globalScale,
+        scale2x2: state.scale2x2,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
@@ -1090,6 +1110,7 @@
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
         globalScale: state.globalScale,
+        scale2x2: state.scale2x2,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
@@ -1145,6 +1166,7 @@
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
         globalScale: state.globalScale,
+        scale2x2: state.scale2x2,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
@@ -1597,6 +1619,7 @@ ${cellsHTML}
       state.gridWidth = defaultState.gridWidth;
       state.bgColor = defaultState.bgColor;
       state.globalScale = defaultState.globalScale;
+      state.scale2x2 = defaultState.scale2x2;
       state.tiltIntensity = defaultState.tiltIntensity;
       state.shadowIntensity = defaultState.shadowIntensity;
       state.hoverScaleAmount = defaultState.hoverScaleAmount;
@@ -1640,6 +1663,9 @@ ${cellsHTML}
       globalScaleSlider.value = state.globalScale;
       scaleValue.textContent = state.globalScale + '%';
 
+      scale2x2Slider.value = state.scale2x2;
+      scale2x2Value.textContent = state.scale2x2 + '%';
+
       tiltIntensitySlider.value = state.tiltIntensity;
       tiltValue.textContent = state.tiltIntensity + '°';
 
@@ -1677,6 +1703,7 @@ ${cellsHTML}
     const gridWidthSlider = document.getElementById('gridWidth');
     const bgColorPicker = document.getElementById('bgColor');
     const globalScaleSlider = document.getElementById('globalScale');
+    const scale2x2Slider = document.getElementById('scale2x2');
     const tiltIntensitySlider = document.getElementById('tiltIntensity');
     const shadowIntensitySlider = document.getElementById('shadowIntensity');
     const hoverScaleSlider = document.getElementById('hoverScaleAmount');
@@ -1693,6 +1720,7 @@ ${cellsHTML}
     const gridWidthValue = document.getElementById('gridWidthValue');
     const bgColorValue = document.getElementById('bgColorValue');
     const scaleValue = document.getElementById('scaleValue');
+    const scale2x2Value = document.getElementById('scale2x2Value');
     const tiltValue = document.getElementById('tiltValue');
     const shadowValue = document.getElementById('shadowValue');
     const hoverScaleValue = document.getElementById('hoverScaleValue');
@@ -2295,13 +2323,69 @@ ${cellsHTML}
       }
     }
 
-    // Render grid
+    // Intersection Observer for lazy loading
+    let lazyLoadObserver = null;
+
+    function initLazyLoading() {
+      if (!lazyLoadObserver) {
+        lazyLoadObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const placeholder = entry.target;
+              const index = parseInt(placeholder.dataset.index);
+              const cellData = state.cells[index];
+
+              if (cellData) {
+                const cellEl = createCell(cellData);
+                placeholder.replaceWith(cellEl);
+                lazyLoadObserver.unobserve(placeholder);
+              }
+            }
+          });
+        }, {
+          root: null,
+          rootMargin: '200px',
+          threshold: 0.01
+        });
+      }
+    }
+
+    // Render grid with lazy loading
     function renderGrid() {
       grid.innerHTML = '';
-      state.cells.forEach(cellData => {
-        const cellEl = createCell(cellData);
-        grid.appendChild(cellEl);
+
+      const INITIAL_LOAD = 8;
+
+      state.cells.forEach((cellData, index) => {
+        if (index < INITIAL_LOAD) {
+          // Render first 8 cells immediately
+          const cellEl = createCell(cellData);
+          grid.appendChild(cellEl);
+        } else {
+          // Create placeholder for lazy loading
+          const placeholder = document.createElement('div');
+          placeholder.className = 'cell';
+          placeholder.dataset.index = index;
+          placeholder.dataset.width = cellData.width || 1;
+          placeholder.dataset.height = cellData.height || 1;
+          placeholder.innerHTML = `
+            <div class="cell-placeholder">
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+              <span>Loading...</span>
+            </div>
+          `;
+          grid.appendChild(placeholder);
+
+          // Observe for lazy loading
+          initLazyLoading();
+          lazyLoadObserver.observe(placeholder);
+        }
       });
+
       cellCountValue.textContent = state.cells.length;
       cellCountSlider.value = Math.min(state.cells.length, 50);
       cellCountInput.value = state.cells.length;
@@ -2445,6 +2529,20 @@ ${cellsHTML}
         state.globalScale = defaultState.globalScale;
         scaleValue.textContent = state.globalScale + '%';
         globalScaleSlider.value = state.globalScale;
+        updateGrid();
+        saveState();
+      });
+
+      scale2x2Slider.addEventListener('input', createSliderHandler((e) => {
+        state.scale2x2 = parseInt(e.target.value);
+        scale2x2Value.textContent = state.scale2x2 + '%';
+        updateGrid();
+      }));
+      scale2x2Slider.addEventListener('dblclick', () => {
+        saveToHistory();
+        state.scale2x2 = defaultState.scale2x2;
+        scale2x2Value.textContent = state.scale2x2 + '%';
+        scale2x2Slider.value = state.scale2x2;
         updateGrid();
         saveState();
       });
@@ -2597,6 +2695,15 @@ ${cellsHTML}
         state.globalScale = defaultState.globalScale;
         scaleValue.textContent = state.globalScale + '%';
         globalScaleSlider.value = state.globalScale;
+        updateGrid();
+        saveState();
+      });
+
+      document.getElementById('reset2x2Scale')?.addEventListener('click', () => {
+        saveToHistory();
+        state.scale2x2 = defaultState.scale2x2;
+        scale2x2Value.textContent = state.scale2x2 + '%';
+        scale2x2Slider.value = state.scale2x2;
         updateGrid();
         saveState();
       });
