@@ -324,6 +324,23 @@
       color: var(--text-secondary);
     }
 
+    .color-hex-input {
+      font-size: 12px;
+      font-family: 'SF Mono', Monaco, monospace;
+      color: var(--text-primary);
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 4px 8px;
+      width: 80px;
+      text-transform: uppercase;
+    }
+
+    .color-hex-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
     /* Cell Count Control */
     .cell-count-control {
       display: flex;
@@ -736,6 +753,108 @@
     .cell.drag-target {
       background: rgba(0, 102, 255, 0.1);
     }
+
+    /* Values Modal */
+    .values-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .values-modal.active {
+      display: flex;
+    }
+
+    .values-modal-content {
+      background: var(--panel-bg);
+      border-radius: 12px;
+      padding: 24px;
+      min-width: 300px;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .values-modal-header {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+    }
+
+    .values-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .value-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--bg-color);
+      border-radius: 6px;
+    }
+
+    .value-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .value-data {
+      font-size: 14px;
+      font-family: 'SF Mono', Monaco, monospace;
+      color: var(--text-primary);
+      background: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      user-select: all;
+      cursor: text;
+    }
+
+    .values-modal-footer {
+      margin-top: 20px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .modal-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .modal-btn-primary:hover {
+      background: #0052cc;
+    }
+
+    .modal-btn-secondary {
+      background: var(--bg-color);
+      color: var(--text-primary);
+    }
+
+    .modal-btn-secondary:hover {
+      background: var(--border-color);
+    }
   </style>
 </head>
 <body>
@@ -842,11 +961,37 @@
 
           <div class="control">
             <div class="control-header">
-              <label class="control-label">Background</label>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label class="control-label">Background</label>
+                <button class="reset-btn" id="resetBgColor" title="Reset to default">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="color-picker-wrapper">
               <input type="color" id="bgColor" value="#f5f5f5">
-              <span class="color-hex" id="bgColorValue">#f5f5f5</span>
+              <input type="text" class="color-hex-input" id="bgColorHex" value="#f5f5f5" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="control-header">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <label class="control-label">Cell Background</label>
+                <button class="reset-btn" id="resetCellBgColor" title="Reset to default">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="color-picker-wrapper">
+              <input type="color" id="cellBgColor" value="#e8e8e8">
+              <input type="text" class="color-hex-input" id="cellBgColorHex" value="#e8e8e8" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$">
             </div>
           </div>
 
@@ -866,21 +1011,6 @@
             <input type="range" id="globalScale" min="50" max="150" value="80">
           </div>
 
-          <div class="control">
-            <div class="control-header">
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <label class="control-label">2x2 Scale</label>
-                <button class="reset-btn" id="reset2x2Scale" title="Reset to default">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                    <path d="M3 3v5h5"/>
-                  </svg>
-                </button>
-              </div>
-              <span class="control-value" id="scale2x2Value">100%</span>
-            </div>
-            <input type="range" id="scale2x2" min="50" max="150" value="100">
-          </div>
 
           <div class="control">
             <div class="control-header">
@@ -946,21 +1076,6 @@
             <input type="range" id="hoverScaleAmount" min="0" max="50" value="5">
           </div>
 
-          <div class="control">
-            <div class="control-header">
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <label class="control-label">Hover Scale 2x2</label>
-                <button class="reset-btn" id="resetHoverScale2x" title="Reset to default">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                    <path d="M3 3v5h5"/>
-                  </svg>
-                </button>
-              </div>
-              <span class="control-value" id="hoverScale2xValue">3%</span>
-            </div>
-            <input type="range" id="hoverScale2xAmount" min="0" max="50" value="3">
-          </div>
 
           <div class="control">
             <label class="link-checkbox">
@@ -986,6 +1101,31 @@
         </div>
       </div>
     </main>
+
+    <!-- Values Modal -->
+    <div class="values-modal" id="valuesModal">
+      <div class="values-modal-content">
+        <div class="values-modal-header">Image Values</div>
+        <div class="values-list">
+          <div class="value-row">
+            <span class="value-label">Scale</span>
+            <span class="value-data" id="modalScaleValue">100</span>
+          </div>
+          <div class="value-row">
+            <span class="value-label">X Position</span>
+            <span class="value-data" id="modalXValue">0</span>
+          </div>
+          <div class="value-row">
+            <span class="value-label">Y Position</span>
+            <span class="value-data" id="modalYValue">0</span>
+          </div>
+        </div>
+        <div class="values-modal-footer">
+          <button class="modal-btn modal-btn-secondary" id="modalCloseBtn">Close</button>
+          <button class="modal-btn modal-btn-primary" id="modalCopyBtn">Copy All</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1000,12 +1140,11 @@
       paddingY: 8,
       linkPadding: true,
       bgColor: '#f5f5f5',
+      cellBgColor: '#e8e8e8',
       globalScale: 80,
-      scale2x2: 100,
       tiltIntensity: 6,
       shadowIntensity: 7,
       hoverScaleAmount: 5,
-      hoverScale2xAmount: 3,
       scaleBySize: true,
       cellCount: 8,
       cells: [],
@@ -1022,12 +1161,11 @@
       cellHeight: 180,
       gridWidth: 1400,
       bgColor: '#f5f5f5',
+      cellBgColor: '#e8e8e8',
       globalScale: 80,
-      scale2x2: 100,
       tiltIntensity: 6,
       shadowIntensity: 7,
       hoverScaleAmount: 5,
-      hoverScale2xAmount: 3,
       scaleBySize: true,
       cellCount: 8
     };
@@ -1049,7 +1187,6 @@
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
         globalScale: state.globalScale,
-        scale2x2: state.scale2x2,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
@@ -1078,7 +1215,6 @@
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
         globalScale: state.globalScale,
-        scale2x2: state.scale2x2,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
@@ -1111,7 +1247,6 @@
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
         globalScale: state.globalScale,
-        scale2x2: state.scale2x2,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
@@ -1167,7 +1302,6 @@
         gridWidth: state.gridWidth,
         bgColor: state.bgColor,
         globalScale: state.globalScale,
-        scale2x2: state.scale2x2,
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
@@ -1340,7 +1474,7 @@
     }
 
     .cell {
-      background: #e8e8e8;
+      background: ${state.cellBgColor};
       border-radius: ${state.radius}px;
       position: relative;
       overflow: hidden;
@@ -1632,7 +1766,6 @@ ${cellsHTML}
       state.gridWidth = defaultState.gridWidth;
       state.bgColor = defaultState.bgColor;
       state.globalScale = defaultState.globalScale;
-      state.scale2x2 = defaultState.scale2x2;
       state.tiltIntensity = defaultState.tiltIntensity;
       state.shadowIntensity = defaultState.shadowIntensity;
       state.hoverScaleAmount = defaultState.hoverScaleAmount;
@@ -1671,13 +1804,13 @@ ${cellsHTML}
       gridWidthValue.textContent = state.gridWidth + 'px';
 
       bgColorPicker.value = state.bgColor;
-      bgColorValue.textContent = state.bgColor;
+      bgColorHexInput.value = state.bgColor.toUpperCase();
+
+      cellBgColorPicker.value = state.cellBgColor || '#e8e8e8';
+      cellBgColorHexInput.value = (state.cellBgColor || '#e8e8e8').toUpperCase();
 
       globalScaleSlider.value = state.globalScale;
       scaleValue.textContent = state.globalScale + '%';
-
-      scale2x2Slider.value = state.scale2x2;
-      scale2x2Value.textContent = state.scale2x2 + '%';
 
       tiltIntensitySlider.value = state.tiltIntensity;
       tiltValue.textContent = state.tiltIntensity + '°';
@@ -1687,9 +1820,6 @@ ${cellsHTML}
 
       hoverScaleSlider.value = state.hoverScaleAmount;
       hoverScaleValue.textContent = state.hoverScaleAmount + '%';
-
-      hoverScale2xSlider.value = state.hoverScale2xAmount;
-      hoverScale2xValue.textContent = state.hoverScale2xAmount + '%';
 
       scaleBySizeCheckbox.checked = state.scaleBySize;
 
@@ -1715,12 +1845,13 @@ ${cellsHTML}
     const cellHeightSlider = document.getElementById('cellHeight');
     const gridWidthSlider = document.getElementById('gridWidth');
     const bgColorPicker = document.getElementById('bgColor');
+    const bgColorHexInput = document.getElementById('bgColorHex');
+    const cellBgColorPicker = document.getElementById('cellBgColor');
+    const cellBgColorHexInput = document.getElementById('cellBgColorHex');
     const globalScaleSlider = document.getElementById('globalScale');
-    const scale2x2Slider = document.getElementById('scale2x2');
     const tiltIntensitySlider = document.getElementById('tiltIntensity');
     const shadowIntensitySlider = document.getElementById('shadowIntensity');
     const hoverScaleSlider = document.getElementById('hoverScaleAmount');
-    const hoverScale2xSlider = document.getElementById('hoverScale2xAmount');
     const scaleBySizeCheckbox = document.getElementById('scaleBySize');
     const cellCountSlider = document.getElementById('cellCount');
     const cellCountInput = document.getElementById('cellCountInput');
@@ -1731,14 +1862,19 @@ ${cellsHTML}
     const radiusValue = document.getElementById('radiusValue');
     const cellHeightValue = document.getElementById('cellHeightValue');
     const gridWidthValue = document.getElementById('gridWidthValue');
-    const bgColorValue = document.getElementById('bgColorValue');
     const scaleValue = document.getElementById('scaleValue');
-    const scale2x2Value = document.getElementById('scale2x2Value');
     const tiltValue = document.getElementById('tiltValue');
     const shadowValue = document.getElementById('shadowValue');
     const hoverScaleValue = document.getElementById('hoverScaleValue');
-    const hoverScale2xValue = document.getElementById('hoverScale2xValue');
     const cellCountValue = document.getElementById('cellCountValue');
+
+    // Modal elements
+    const valuesModal = document.getElementById('valuesModal');
+    const modalScaleValue = document.getElementById('modalScaleValue');
+    const modalXValue = document.getElementById('modalXValue');
+    const modalYValue = document.getElementById('modalYValue');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    const modalCopyBtn = document.getElementById('modalCopyBtn');
 
     // Initialize
     async function init() {
@@ -1832,6 +1968,18 @@ ${cellsHTML}
       cell.addEventListener('click', (e) => {
         if (e.target.closest('.resize-handle') || e.target.closest('.cell-controls')) return;
         selectCell(cellData.id);
+      });
+
+      // Double-click cell-image to show modal with values
+      const cellImage = cell.querySelector('.cell-image');
+      cellImage.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        if (cellData.image || cellData.video) {
+          modalScaleValue.textContent = cellData.scale || 100;
+          modalXValue.textContent = cellData.x || 0;
+          modalYValue.textContent = cellData.y || 0;
+          valuesModal.classList.add('active');
+        }
       });
 
       // Resize handles
@@ -2430,6 +2578,7 @@ ${cellsHTML}
       document.documentElement.style.setProperty('--padding-x', state.paddingX + 'px');
       document.documentElement.style.setProperty('--padding-y', state.paddingY + 'px');
       document.documentElement.style.setProperty('--bg-color', state.bgColor);
+      document.documentElement.style.setProperty('--cell-bg', state.cellBgColor);
 
       state.cells.forEach(cellData => {
         const cellEl = grid.querySelector(`[data-id="${cellData.id}"]`);
@@ -2544,9 +2693,37 @@ ${cellsHTML}
 
       bgColorPicker.addEventListener('input', createSliderHandler((e) => {
         state.bgColor = e.target.value;
-        bgColorValue.textContent = e.target.value;
+        bgColorHexInput.value = e.target.value.toUpperCase();
         updateGrid();
       }));
+
+      bgColorHexInput.addEventListener('input', (e) => {
+        const hex = e.target.value;
+        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+          saveToHistory();
+          state.bgColor = hex;
+          bgColorPicker.value = hex;
+          updateGrid();
+          saveState();
+        }
+      });
+
+      cellBgColorPicker.addEventListener('input', createSliderHandler((e) => {
+        state.cellBgColor = e.target.value;
+        cellBgColorHexInput.value = e.target.value.toUpperCase();
+        updateGrid();
+      }));
+
+      cellBgColorHexInput.addEventListener('input', (e) => {
+        const hex = e.target.value;
+        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+          saveToHistory();
+          state.cellBgColor = hex;
+          cellBgColorPicker.value = hex;
+          updateGrid();
+          saveState();
+        }
+      });
 
       globalScaleSlider.addEventListener('input', createSliderHandler((e) => {
         state.globalScale = parseInt(e.target.value);
@@ -2558,20 +2735,6 @@ ${cellsHTML}
         state.globalScale = defaultState.globalScale;
         scaleValue.textContent = state.globalScale + '%';
         globalScaleSlider.value = state.globalScale;
-        updateGrid();
-        saveState();
-      });
-
-      scale2x2Slider.addEventListener('input', createSliderHandler((e) => {
-        state.scale2x2 = parseInt(e.target.value);
-        scale2x2Value.textContent = state.scale2x2 + '%';
-        updateGrid();
-      }));
-      scale2x2Slider.addEventListener('dblclick', () => {
-        saveToHistory();
-        state.scale2x2 = defaultState.scale2x2;
-        scale2x2Value.textContent = state.scale2x2 + '%';
-        scale2x2Slider.value = state.scale2x2;
         updateGrid();
         saveState();
       });
@@ -2650,18 +2813,6 @@ ${cellsHTML}
         saveState();
       });
 
-      hoverScale2xSlider.addEventListener('input', createSliderHandler((e) => {
-        state.hoverScale2xAmount = parseInt(e.target.value);
-        hoverScale2xValue.textContent = state.hoverScale2xAmount + '%';
-      }));
-      hoverScale2xSlider.addEventListener('dblclick', () => {
-        saveToHistory();
-        state.hoverScale2xAmount = defaultState.hoverScale2xAmount;
-        hoverScale2xValue.textContent = state.hoverScale2xAmount + '%';
-        hoverScale2xSlider.value = state.hoverScale2xAmount;
-        saveState();
-      });
-
       scaleBySizeCheckbox.addEventListener('change', (e) => {
         saveToHistory();
         state.scaleBySize = e.target.checked;
@@ -2728,15 +2879,6 @@ ${cellsHTML}
         saveState();
       });
 
-      document.getElementById('reset2x2Scale')?.addEventListener('click', () => {
-        saveToHistory();
-        state.scale2x2 = defaultState.scale2x2;
-        scale2x2Value.textContent = state.scale2x2 + '%';
-        scale2x2Slider.value = state.scale2x2;
-        updateGrid();
-        saveState();
-      });
-
       document.getElementById('resetTilt')?.addEventListener('click', () => {
         saveToHistory();
         state.tiltIntensity = defaultState.tiltIntensity;
@@ -2761,12 +2903,46 @@ ${cellsHTML}
         saveState();
       });
 
-      document.getElementById('resetHoverScale2x')?.addEventListener('click', () => {
+      document.getElementById('resetBgColor')?.addEventListener('click', () => {
         saveToHistory();
-        state.hoverScale2xAmount = defaultState.hoverScale2xAmount;
-        hoverScale2xValue.textContent = state.hoverScale2xAmount + '%';
-        hoverScale2xSlider.value = state.hoverScale2xAmount;
+        state.bgColor = defaultState.bgColor;
+        bgColorPicker.value = state.bgColor;
+        bgColorHexInput.value = state.bgColor.toUpperCase();
+        updateGrid();
         saveState();
+      });
+
+      document.getElementById('resetCellBgColor')?.addEventListener('click', () => {
+        saveToHistory();
+        state.cellBgColor = defaultState.cellBgColor;
+        cellBgColorPicker.value = state.cellBgColor;
+        cellBgColorHexInput.value = state.cellBgColor.toUpperCase();
+        updateGrid();
+        saveState();
+      });
+
+      // Modal handlers
+      modalCloseBtn.addEventListener('click', () => {
+        valuesModal.classList.remove('active');
+      });
+
+      valuesModal.addEventListener('click', (e) => {
+        if (e.target === valuesModal) {
+          valuesModal.classList.remove('active');
+        }
+      });
+
+      modalCopyBtn.addEventListener('click', () => {
+        const scale = modalScaleValue.textContent;
+        const x = modalXValue.textContent;
+        const y = modalYValue.textContent;
+        const text = `Scale: ${scale}\nX: ${x}\nY: ${y}`;
+        navigator.clipboard.writeText(text).then(() => {
+          modalCopyBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            modalCopyBtn.textContent = 'Copy All';
+          }, 1500);
+        });
       });
 
       // Keyboard shortcuts
