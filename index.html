@@ -1190,7 +1190,6 @@
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
-        hoverScale2xAmount: state.hoverScale2xAmount,
         scaleBySize: state.scaleBySize,
         cells: JSON.parse(JSON.stringify(state.cells))
       };
@@ -1218,7 +1217,6 @@
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
-        hoverScale2xAmount: state.hoverScale2xAmount,
         scaleBySize: state.scaleBySize,
         cells: JSON.parse(JSON.stringify(state.cells))
       };
@@ -1250,7 +1248,6 @@
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
-        hoverScale2xAmount: state.hoverScale2xAmount,
         scaleBySize: state.scaleBySize,
         cells: JSON.parse(JSON.stringify(state.cells))
       };
@@ -1305,7 +1302,6 @@
         tiltIntensity: state.tiltIntensity,
         shadowIntensity: state.shadowIntensity,
         hoverScaleAmount: state.hoverScaleAmount,
-        hoverScale2xAmount: state.hoverScale2xAmount,
         scaleBySize: state.scaleBySize,
         cells: state.cells
       };
@@ -1538,7 +1534,6 @@ ${cellsHTML}
       tiltIntensity: state.tiltIntensity,
       shadowIntensity: state.shadowIntensity,
       hoverScaleAmount: state.hoverScaleAmount,
-      hoverScale2xAmount: state.hoverScale2xAmount,
       scaleBySize: state.scaleBySize,
       globalScale: state.globalScale,
       cells: cellsWithImages.map(c => ({
@@ -1603,9 +1598,7 @@ ${cellsHTML}
         const cellHeight = parseInt(cell.dataset.height) || 1;
         const is2x = (cellWidth === 2 || cellHeight === 2);
 
-        const baseScale = is2x ?
-          (state.hoverScale2xAmount / 100) :
-          (state.hoverScaleAmount / 100);
+        const baseScale = state.hoverScaleAmount / 100;
 
         if (!state.scaleBySize) return 1 + baseScale;
 
@@ -1771,7 +1764,6 @@ ${cellsHTML}
       state.tiltIntensity = defaultState.tiltIntensity;
       state.shadowIntensity = defaultState.shadowIntensity;
       state.hoverScaleAmount = defaultState.hoverScaleAmount;
-      state.hoverScale2xAmount = defaultState.hoverScale2xAmount;
       state.scaleBySize = defaultState.scaleBySize;
       state.cells = [];
       state.cellCount = defaultState.cellCount;
@@ -2103,9 +2095,7 @@ ${cellsHTML}
         const cellHeight = parseInt(cell.dataset.height) || 1;
         const is2x = (cellWidth === 2 || cellHeight === 2);
 
-        const baseScale = is2x ?
-          (state.hoverScale2xAmount / 100) :
-          (state.hoverScaleAmount / 100);
+        const baseScale = state.hoverScaleAmount / 100;
 
         if (!state.scaleBySize) return 1 + baseScale;
 
